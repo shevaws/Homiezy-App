@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "419265499367",
+    "project_id": "homiezy-44936",
+    "storage_bucket": "homiezy-44936.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419265499367:android:63243319531221d08d1242",
+        "android_client_info": {
+          "package_name": "com.example.homiezy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419265499367-gcfn9gnep1sgu0581clj70jrkm7dlstf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.homiezy",
+            "certificate_hash": "81ca5f72f65f0826bbe68c35ae009fc589cd0614"
+          }
+        },
+        {
+          "client_id": "419265499367-gbrv10dvo4nkvdbsjtumj2m083bcovrm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCN2oFLvQdgn8ga8Pz8KOtoMhYRAIGLX2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419265499367-gbrv10dvo4nkvdbsjtumj2m083bcovrm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
