@@ -12,6 +12,8 @@ import 'presentation/pages/detail/kos_detail_page.dart';
 import 'presentation/pages/detail/catering_detail_page.dart';
 import 'presentation/pages/detail/laundry_detail_page.dart';
 import 'presentation/pages/detail/paket_detail_page.dart';
+import 'presentation/pages/pemesanan_page.dart';
+import 'presentation/pages/payment_result_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
         AppRoutes.cateringDetail: (context) => const CateringDetailPage(),
         AppRoutes.laundryDetail: (context) => const LaundryDetailPage(),
         AppRoutes.paketDetail: (context) => const PaketDetailPage(),
+        AppRoutes.pemesanan: (context) => const PemesananPage(),
+        AppRoutes.paymentResult: (context) => const PaymentResultPage(),
       },
     );
   }

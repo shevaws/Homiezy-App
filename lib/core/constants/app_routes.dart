@@ -8,7 +8,8 @@ class AppRoutes {
   static const String cateringDetail = '/catering-detail';
   static const String laundryDetail = '/laundry-detail';
   static const String paketDetail = '/paket-detail';
-  static const String pemesanan = '/pemesanan'; // fase 3
+  static const String pemesanan = '/pemesanan';
+  static const String paymentResult = '/payment-result';
   static const String orderHistory = '/order-history'; // fase 4
   static const String profile = '/profile'; // fase 5
 }
