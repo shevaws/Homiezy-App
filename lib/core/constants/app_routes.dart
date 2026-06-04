@@ -10,6 +10,8 @@ class AppRoutes {
   static const String paketDetail = '/paket-detail';
   static const String pemesanan = '/pemesanan';
   static const String paymentResult = '/payment-result';
-  static const String orderHistory = '/order-history'; // fase 4
-  static const String profile = '/profile'; // fase 5
+  static const String orderHistory = '/order-history';
+  static const String orderDetail = '/order-detail';
+  static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
 }

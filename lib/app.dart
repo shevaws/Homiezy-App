@@ -14,6 +14,10 @@ import 'presentation/pages/detail/laundry_detail_page.dart';
 import 'presentation/pages/detail/paket_detail_page.dart';
 import 'presentation/pages/pemesanan_page.dart';
 import 'presentation/pages/payment_result_page.dart';
+import 'presentation/pages/order_history_page.dart';
+import 'presentation/pages/order_detail_page.dart';
+import 'presentation/pages/profile_page.dart';
+import 'presentation/pages/edit_profile_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -51,6 +55,10 @@ class MyApp extends StatelessWidget {
         AppRoutes.paketDetail: (context) => const PaketDetailPage(),
         AppRoutes.pemesanan: (context) => const PemesananPage(),
         AppRoutes.paymentResult: (context) => const PaymentResultPage(),
+        AppRoutes.orderHistory: (context) => const OrderHistoryPage(),
+        AppRoutes.orderDetail: (context) => const OrderDetailPage(),
+        AppRoutes.profile: (context) => const ProfilePage(),
+        AppRoutes.editProfile: (context) => const EditProfilePage(),
       },
     );
   }
