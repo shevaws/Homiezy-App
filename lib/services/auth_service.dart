@@ -1,15 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import '../data/datasources/auth_mock_datasource.dart';
+import 'package:dio/dio.dart';
 import '../data/models/user_model.dart';
 import '../domain/entities/user_entity.dart';
 import '../domain/repositories/auth_repository.dart';
+import 'api_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:dio/dio.dart';
 
 class AuthService implements AuthRepository {
-  final AuthMockDatasource _datasource = AuthMockDatasource();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
   UserModel? _currentUser;
 
   @override
@@ -17,9 +14,27 @@ class AuthService implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final user = await _datasource.login(email: email, password: password);
-    _currentUser = user;
-    return user;
+    try {
+      final response = await ApiService.dio.post('/auth/login', data: {
+        'email': email,
+        'password': password,
+      });
+
+      final data = response.data;
+      if (data['success'] == true) {
+        await ApiService.saveToken(data['token']);
+        final user = UserModel.fromJson({
+          ...data['user'],
+          'token': data['token'],
+        });
+        _currentUser = user;
+        return user;
+      }
+      throw Exception(data['message'] ?? 'Login gagal');
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Gagal terhubung ke server';
+      throw Exception(message);
+    }
   }
 
   @override
@@ -29,81 +44,99 @@ class AuthService implements AuthRepository {
     required String password,
     String? phone,
   }) async {
-    final user = await _datasource.register(
-      name: name, email: email, password: password, phone: phone,
-    );
-    _currentUser = user;
-    return user;
+    try {
+      final response = await ApiService.dio.post('/auth/register', data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+      });
+
+      final data = response.data;
+      if (data['success'] == true) {
+        await ApiService.saveToken(data['token']);
+        final user = UserModel.fromJson({
+          ...data['user'],
+          'token': data['token'],
+        });
+        _currentUser = user;
+        return user;
+      }
+      throw Exception(data['message'] ?? 'Registrasi gagal');
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? 'Gagal terhubung ke server';
+      throw Exception(message);
+    }
   }
 
   @override
-  Future<UserEntity> loginWithGoogle() async {
-    // 1. Buka popup pilih akun Google
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+Future<UserEntity> loginWithGoogle() async {
+  try {
+    // 1. Sign in dengan Google
+    final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email', 'profile'], serverClientId: '419265499367-gbrv10dvo4nkvdbsjtumj2m083bcovrm.apps.googleusercontent.com');
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser == null) throw Exception('Login Google dibatalkan');
 
-    // 2. Ambil auth credentials
+    // 2. Ambil idToken
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
+    final String? idToken = googleAuth.idToken;
+    if (idToken == null) throw Exception('Gagal mendapatkan token Google');
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // 3. Sign in ke Firebase
-    final UserCredential userCredential =
-        await _firebaseAuth.signInWithCredential(credential);
-
-    final firebaseUser = userCredential.user;
-    if (firebaseUser == null) throw Exception('Gagal login dengan Google');
-
-    // 4. Kirim idToken ke backend Laravel untuk dapat JWT
-    // TODO: uncomment saat backend siap
-    // final idToken = googleAuth.idToken;
-    // final response = await dio.post('/auth/google', data: {'token': idToken});
-    // final jwtToken = response.data['token'];
-
-    // Sementara pakai Firebase UID sebagai token
-    final firebaseToken = await firebaseUser.getIdToken();
-
-    final user = UserModel.fromJson({
-      'id': firebaseUser.uid,
-      'name': firebaseUser.displayName ?? '',
-      'email': firebaseUser.email ?? '',
-      'phone': firebaseUser.phoneNumber,
-      'photo_url': firebaseUser.photoURL,
-      'role': 'user',
-      'token': firebaseToken,
+    // 3. Kirim idToken ke Laravel
+    final response = await ApiService.dio.post('/auth/google', data: {
+      'id_token': idToken,
     });
 
-    _currentUser = user;
-    return user;
+    final data = response.data;
+    if (data['success'] == true) {
+      await ApiService.saveToken(data['token']);
+      final user = UserModel.fromJson({
+        ...data['user'],
+        'token': data['token'],
+      });
+      _currentUser = user;
+      return user;
+    }
+    throw Exception(data['message'] ?? 'Login Google gagal');
+
+  } on DioException catch (e) {
+    final message = e.response?.data['message'] ?? 'Login Google gagal';
+    throw Exception(message);
   }
+}
 
   @override
   Future<void> logout() async {
-    await _googleSignIn.signOut();
-    await _firebaseAuth.signOut();
+    try {
+      await ApiService.dio.post('/auth/logout');
+    } catch (_) {
+      // Tetap logout lokal meski API gagal
+    }
+    await ApiService.deleteToken();
     _currentUser = null;
   }
 
   @override
   Future<UserEntity?> getCurrentUser() async {
-    // Cek apakah masih ada sesi Firebase
-    final firebaseUser = _firebaseAuth.currentUser;
-    if (firebaseUser != null && _currentUser == null) {
-      final token = await firebaseUser.getIdToken();
-      _currentUser = UserModel.fromJson({
-        'id': firebaseUser.uid,
-        'name': firebaseUser.displayName ?? '',
-        'email': firebaseUser.email ?? '',
-        'phone': firebaseUser.phoneNumber,
-        'photo_url': firebaseUser.photoURL,
-        'role': 'user',
-        'token': token,
-      });
+    try {
+      final token = await ApiService.getToken();
+      if (token == null) return null;
+
+      final response = await ApiService.dio.get('/auth/me');
+      final data = response.data;
+
+      if (data['success'] == true) {
+        final user = UserModel.fromJson({
+          ...data['user'],
+          'token': token,
+        });
+        _currentUser = user;
+        return user;
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
-    return _currentUser;
   }
 }

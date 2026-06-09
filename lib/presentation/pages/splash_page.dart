@@ -4,6 +4,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_routes.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../providers/auth_provider.dart';
+import '../../services/api_service.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -39,17 +40,24 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
-    if (!mounted) return;
+  await Future.delayed(const Duration(milliseconds: 2500));
+  if (!mounted) return;
 
-    // Cek apakah sudah login
-    final authState = ref.read(authProvider);
-    if (authState.isAuthenticated) {
+  // Cek token tersimpan
+  final token = await ApiService.getToken();
+  if (token != null) {
+    // Verifikasi token ke server
+    final user = await ref.read(authServiceProvider).getCurrentUser();
+    if (user != null && mounted) {
+      // Update auth state
+      ref.read(authProvider.notifier);
       Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+      return;
     }
   }
+
+  Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+}
 
   @override
   void dispose() {

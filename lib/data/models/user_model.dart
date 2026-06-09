@@ -16,7 +16,7 @@ class UserModel extends UserEntity {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      phone: json['phone'],
+      phone: json['phone'] ?? json['whatsapp'],
       photoUrl: json['photo_url'],
       role: json['role'] ?? 'user',
       token: json['token'],
