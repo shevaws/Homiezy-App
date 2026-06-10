@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/order_mock_datasource.dart';
+import '../../data/datasources/order_api_datasource.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../data/models/order_model.dart';
 
@@ -36,7 +36,7 @@ class OrderState {
 }
 
 class OrderNotifier extends StateNotifier<OrderState> {
-  final OrderMockDatasource _datasource;
+  final OrderApiDatasource _datasource;
 
   OrderNotifier(this._datasource) : super(const OrderState());
 
@@ -102,8 +102,8 @@ class OrderNotifier extends StateNotifier<OrderState> {
   void clearError() => state = state.copyWith(errorMessage: null);
 }
 
-final orderDatasourceProvider = Provider<OrderMockDatasource>(
-  (ref) => OrderMockDatasource(),
+final orderDatasourceProvider = Provider<OrderApiDatasource>(
+  (ref) => OrderApiDatasource(),
 );
 
 final orderProvider = StateNotifierProvider<OrderNotifier, OrderState>((ref) {

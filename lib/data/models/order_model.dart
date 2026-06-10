@@ -21,24 +21,45 @@ class OrderModel extends OrderEntity {
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
-    return OrderModel(
-      id: json['id'].toString(),
-      type: OrderType.values.firstWhere(
-          (e) => e.name == json['type'], orElse: () => OrderType.kos),
-      status: OrderStatus.values.firstWhere(
-          (e) => e.name == json['status'],
-          orElse: () => OrderStatus.pending),
-      userId: json['user_id'].toString(),
-      tanggalMulai: DateTime.parse(json['tanggal_mulai']),
-      durasibulan: json['durasi_bulan'] ?? 1,
-      alamat: json['alamat'] ?? '',
-      catatan: json['catatan'],
-      totalHarga: (json['total_harga'] as num).toDouble(),
-      snapToken: json['snap_token'],
-      paymentUrl: json['payment_url'],
-      createdAt: DateTime.parse(json['created_at']),
-    );
+  // Parse status
+  OrderStatus parseStatus(String? s) {
+    switch (s?.toLowerCase()) {
+      case 'success':   return OrderStatus.aktif;
+      case 'cancelled': return OrderStatus.dibatalkan;
+      case 'selesai':   return OrderStatus.selesai;
+      default:          return OrderStatus.pending;
+    }
   }
+
+  // Parse type
+  OrderType parseType(String? t) {
+    switch (t?.toLowerCase()) {
+      case 'katering':  return OrderType.catering;
+      case 'laundry':   return OrderType.laundry;
+      case 'paket':     return OrderType.paket;
+      default:          return OrderType.kos;
+    }
+  }
+
+  return OrderModel(
+    id: json['id']?.toString() ?? '',
+    type: parseType(json['tipe'] ?? json['type']),
+    status: parseStatus(json['status']),
+    userId: json['user_id']?.toString() ?? '',
+    tanggalMulai: json['created_at'] != null
+        ? DateTime.parse(json['created_at'])
+        : DateTime.now(),
+    durasibulan: json['durasi_bulan'] ?? 1,
+    alamat: json['alamat'] ?? '',
+    catatan: json['catatan'],
+    totalHarga: (json['total_harga'] ?? json['price'] ?? 0).toDouble(),
+    snapToken: null,
+    paymentUrl: json['xendit_invoice_url'],
+    createdAt: json['created_at'] != null
+        ? DateTime.parse(json['created_at'])
+        : DateTime.now(),
+  );
+}
 
   Map<String, dynamic> toJson() => {
     'id': id,

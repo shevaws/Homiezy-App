@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/layanan_mock_datasource.dart';
 import '../../domain/entities/kos_entity.dart';
 import '../../domain/entities/catering_entity.dart';
 import '../../domain/entities/laundry_entity.dart';
 import '../../domain/entities/paket_entity.dart';
+import '../../data/datasources/layanan_api_datasource.dart';
 
 // Datasource provider
-final layananDatasourceProvider = Provider<LayananMockDatasource>(
-  (ref) => LayananMockDatasource(),
+final layananDatasourceProvider = Provider<LayananApiDatasource>(
+  (ref) => LayananApiDatasource(),
 );
 
 // State class
@@ -63,9 +63,9 @@ class LayananState {
   }
 }
 
-// Notifier
+// Update LayananNotifier — ganti tipe datasource ke API
 class LayananNotifier extends StateNotifier<LayananState> {
-  final LayananMockDatasource _datasource;
+  final LayananApiDatasource _datasource;
 
   LayananNotifier(this._datasource) : super(const LayananState()) {
     loadAll();

@@ -11,10 +11,54 @@ class PaymentResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final order = args['order'] as OrderEntity;
-    final status = args['status'] as String;
+    final order = args['order'] as OrderEntity?;
+    final status = args['status'] as String? ?? 'failed';
 
     final isSuccess = status == 'settlement' || status == 'capture';
+
+    // Kalau order null, tetap tampilkan hasil payment
+  if (order == null) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSuccess ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                size: 72,
+                color: isSuccess ? AppColors.success : AppColors.error,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                isSuccess ? 'Pembayaran Berhasil!' : 'Pembayaran Gagal',
+                style: AppTextStyles.displayMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                      context, AppRoutes.home, (route) => false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text('Kembali ke Beranda',
+                      style: AppTextStyles.labelLarge),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
     return Scaffold(
       backgroundColor: AppColors.background,

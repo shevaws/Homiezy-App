@@ -77,46 +77,49 @@ class _PemesananPageState extends ConsumerState<PemesananPage> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    final user = ref.read(authProvider).user;
-    if (user == null) return;
+  final user = ref.read(authProvider).user;
+  if (user == null) return;
 
-    // Buat order
-    final order = await ref.read(orderProvider.notifier).createOrder(
-      type: _orderType,
-      userId: user.id,
-      tanggalMulai: _tanggalMulai,
-      durasibulan: _durasi,
-      alamat: _alamatController.text.trim(),
-      catatan: _catatanController.text.trim().isEmpty
-          ? null
-          : _catatanController.text.trim(),
-      totalHarga: _totalHarga,
-      layananData: _data,
-    );
+  // Untuk kos, alamat diisi otomatis dari nama layanan
+  final alamat = _type == 'kos'
+      ? _namaLayanan  // ← pakai nama kos sebagai alamat
+      : _alamatController.text.trim();
 
-    if (order == null || !mounted) return;
+  final order = await ref.read(orderProvider.notifier).createOrder(
+    type: _orderType,
+    userId: user.id,
+    tanggalMulai: _tanggalMulai,
+    durasibulan: _durasi,
+    alamat: alamat,
+    catatan: _catatanController.text.trim().isEmpty
+        ? null
+        : _catatanController.text.trim(),
+    totalHarga: _totalHarga,
+    layananData: _data,
+  );
 
-    // Proses pembayaran
-    await PaymentService.startPayment(
-      context: context,
-      order: order,
-      onResult: (status) async {
-        if (status == 'settlement' || status == 'capture') {
-          await ref.read(orderProvider.notifier)
-              .updateStatus(order.id, OrderStatus.aktif);
-        }
-        if (mounted) {
-          Navigator.pushReplacementNamed(
-            context,
-            AppRoutes.paymentResult,
-            arguments: {'order': order, 'status': status},
-          );
-        }
-      },
-    );
-  }
+  if (order == null || !mounted) return;
+
+  await PaymentService.startPayment(
+    context: context,
+    order: order,
+    onResult: (status) async {
+      if (status == 'settlement' || status == 'capture') {
+        await ref.read(orderProvider.notifier)
+            .updateStatus(order.id, OrderStatus.aktif);
+      }
+      if (mounted) {
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.paymentResult,
+          arguments: {'order': order, 'status': status},
+        );
+      }
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -227,19 +230,47 @@ class _PemesananPageState extends ConsumerState<PemesananPage> {
               const SizedBox(height: 16),
 
               // Alamat
-              AuthTextField(
-                controller: _alamatController,
-                label: 'Alamat Lengkap',
-                hint: 'Jl. Contoh No. 1, Kota',
-                prefixIcon: Icons.home_outlined,
-                textCapitalization: TextCapitalization.words,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Alamat wajib diisi';
-                  if (v.length < 10) return 'Alamat terlalu singkat';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+              // Alamat — hanya untuk catering & laundry
+if (_type != 'kos') ...[
+  AuthTextField(
+    controller: _alamatController,
+    label: 'Alamat Pengiriman',
+    hint: 'Jl. Contoh No. 1, Kota',
+    prefixIcon: Icons.home_outlined,
+    textCapitalization: TextCapitalization.words,
+    validator: (v) {
+      if (_type == 'kos') return null; // skip validasi untuk kos
+      if (v == null || v.isEmpty) return 'Alamat wajib diisi';
+      if (v.length < 10) return 'Alamat terlalu singkat';
+      return null;
+    },
+  ),
+  const SizedBox(height: 16),
+],
+
+// Untuk kos, tampilkan info saja
+if (_type == 'kos') ...[
+  Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.surfaceVariant,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(children: [
+      const Icon(Icons.info_outline_rounded,
+          color: AppColors.primary, size: 20),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Text(
+          'Alamat kos sudah tercantum di detail layanan.',
+          style: AppTextStyles.bodySmall
+              .copyWith(color: AppColors.textSecondary),
+        ),
+      ),
+    ]),
+  ),
+  const SizedBox(height: 16),
+],
 
               // Catatan (opsional)
               Column(

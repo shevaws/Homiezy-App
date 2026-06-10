@@ -19,12 +19,15 @@ import 'presentation/pages/order_detail_page.dart';
 import 'presentation/pages/profile_page.dart';
 import 'presentation/pages/edit_profile_page.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Homiezy',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

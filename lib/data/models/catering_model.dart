@@ -10,17 +10,21 @@ class CateringModel extends CateringEntity {
   });
 
   factory CateringModel.fromJson(Map<String, dynamic> json) {
-    return CateringModel(
-      id: json['id'].toString(), nama: json['nama'] ?? '',
-      deskripsi: json['deskripsi'] ?? '',
-      hargaPerBulan: (json['harga_per_bulan'] as num).toDouble(),
-      rating: (json['rating'] as num).toDouble(),
-      totalReview: json['total_review'] ?? 0,
-      menuContoh: List<String>.from(json['menu_contoh'] ?? []),
-      fotoUrls: List<String>.from(json['foto_urls'] ?? []),
-      jumlahMakanPerHari: json['jumlah_makan_per_hari'] ?? 2,
-      tersedia: json['tersedia'] ?? true,
-      mitraId: json['mitra_id'].toString(), mitraNama: json['mitra_nama'] ?? '',
-    );
-  }
+  return CateringModel(
+    id: json['id']?.toString() ?? '',
+    nama: json['nama'] ?? json['name'] ?? '',
+    deskripsi: json['deskripsi'] ?? json['subtitle'] ?? '',
+    hargaPerBulan: (json['harga'] ?? json['harga_per_bulan'] ?? 0).toDouble(),
+    rating: (json['rating'] ?? 0).toDouble(),
+    totalReview: json['total_review'] ?? 0,
+    menuContoh: List<String>.from(
+      json['menu_contoh'] ?? json['extra_info'] ?? []
+    ).where((e) => e.isNotEmpty).toList(),
+    fotoUrls: List<String>.from(json['foto_urls'] ?? []),
+    jumlahMakanPerHari: json['jumlah_makan_per_hari'] ?? 2,
+    tersedia: json['tersedia'] ?? true,
+    mitraId: json['mitra_id']?.toString() ?? '',
+    mitraNama: json['mitra_nama'] ?? '',
+  );
+}
 }
