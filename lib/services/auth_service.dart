@@ -139,4 +139,31 @@ Future<UserEntity> loginWithGoogle() async {
       return null;
     }
   }
+
+  Future<UserEntity> updateProfile({
+  required String name,
+  String? phone,
+}) async {
+  try {
+    final response = await ApiService.dio.put('/profile', data: {
+      'name': name,
+      'phone': phone,
+    });
+
+    final data = response.data;
+    if (data['success'] == true) {
+      final token = await ApiService.getToken();
+      final user = UserModel.fromJson({
+        ...data['data'],
+        'token': token,
+      });
+      _currentUser = user;
+      return user;
+    }
+    throw Exception(data['message'] ?? 'Gagal update profil');
+  } on DioException catch (e) {
+    throw Exception(
+        e.response?.data['message'] ?? 'Gagal terhubung ke server');
+  }
+}
 }

@@ -112,11 +112,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }
+
+  Future<bool> updateProfile({
+  required String name,
+  String? phone,
+}) async {
+  state = state.copyWith(isLoading: true, errorMessage: null);
+  try {
+    final user = await _authService.updateProfile(
+      name: name,
+      phone: phone,
+    );
+    state = state.copyWith(
+      user: user,
+      isLoading: false,
+    );
+    return true;
+  } catch (e) {
+    state = state.copyWith(
+      isLoading: false,
+      errorMessage: e.toString().replaceAll('Exception: ', ''),
+    );
+    return false;
+  }
+}
 }
 
 // Providers
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  
   return AuthNotifier(ref.watch(authServiceProvider));
 });

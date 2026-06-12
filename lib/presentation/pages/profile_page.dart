@@ -14,6 +14,12 @@ class ProfilePage extends ConsumerWidget {
     final user = ref.watch(authProvider).user;
     final orderState = ref.watch(orderProvider);
 
+    ref.listen(authProvider, (prev, next) {
+      if (next.isAuthenticated && next.user != null) {
+        ref.read(orderProvider.notifier).loadOrders(next.user!.id);
+      }
+    });
+    
     final totalAktif = orderState.orders
         .where((o) => o.status.name == 'aktif').length;
     final totalSelesai = orderState.orders

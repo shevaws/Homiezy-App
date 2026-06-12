@@ -35,28 +35,31 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSaving = true);
+  if (!_formKey.currentState!.validate()) return;
+  setState(() => _isSaving = true);
 
-    // Simulasi save
-    await Future.delayed(const Duration(milliseconds: 800));
+  final success = await ref.read(authProvider.notifier).updateProfile(
+    name: _nameController.text.trim(),
+    phone: _phoneController.text.trim().isEmpty
+        ? null
+        : _phoneController.text.trim(),
+  );
 
-    // TODO: Panggil API update profile saat backend siap
-    // Sementara cukup pop
-    setState(() => _isSaving = false);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Profil berhasil diperbarui!'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-      Navigator.pop(context);
-    }
+  setState(() => _isSaving = false);
+
+  if (success && mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Profil berhasil diperbarui!'),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+    Navigator.pop(context);
   }
+}
 
   @override
   Widget build(BuildContext context) {
