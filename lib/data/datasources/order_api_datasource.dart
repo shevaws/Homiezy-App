@@ -5,37 +5,46 @@ import '../../services/api_service.dart';
 
 class OrderApiDatasource {
   Future<OrderModel> createOrder({
-    required OrderType type,
-    required String userId,
-    required DateTime tanggalMulai,
-    required int durasibulan,
-    required String alamat,
-    String? catatan,
-    required double totalHarga,
-    dynamic layananData,
-  }) async {
-    try {
-      // Ambil service_id dari layanan data
-      String? serviceId;
-      if (layananData != null) {
-        serviceId = layananData.id?.toString();
-      }
+  required OrderType type,
+  required String userId,
+  required DateTime tanggalMulai,
+  required int durasibulan,
+  required String alamat,
+  String? catatan,
+  required double totalHarga,
+  dynamic layananData,
+}) async {
+  try {
+    String? serviceId;
+    String? kosId;
+    String tipe = type.name;
 
-      final response = await ApiService.dio.post('/orders', data: {
-        'service_id':    serviceId,
-        'tanggal_mulai': tanggalMulai.toIso8601String(),
-        'durasi_bulan':  durasibulan,
-        'alamat':        alamat,
-        'catatan':       catatan,
-      });
-
-      final data = response.data['data'];
-      return OrderModel.fromJson(data);
-    } on DioException catch (e) {
-      throw Exception(
-          e.response?.data['message'] ?? 'Gagal membuat order');
+    // Handle paket — ambil kos ID dari dalam paket
+    if (type == OrderType.paket && layananData != null) {
+      serviceId = layananData.id?.toString();
+      kosId = layananData.kos?.id?.toString(); // ← ambil kos ID
+    } else if (layananData != null) {
+      serviceId = layananData.id?.toString();
     }
+
+    final response = await ApiService.dio.post('/orders', data: {
+      'service_id':    serviceId,
+      'kos_id':        kosId,        // ← kirim kos_id untuk paket
+      'tipe':          tipe,
+      'tanggal_mulai': tanggalMulai.toIso8601String(),
+      'durasi_bulan':  durasibulan,
+      'alamat':        alamat,
+      'catatan':       catatan,
+      'total_harga':   totalHarga,   // ← kirim total harga
+    });
+
+    final data = response.data['data'];
+    return OrderModel.fromJson(data);
+  } on DioException catch (e) {
+    throw Exception(
+        e.response?.data['message'] ?? 'Gagal membuat order');
   }
+}
 
   Future<List<OrderModel>> getOrdersByUser(String userId) async {
     try {

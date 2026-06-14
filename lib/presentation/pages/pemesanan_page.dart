@@ -231,7 +231,7 @@ class _PemesananPageState extends ConsumerState<PemesananPage> {
 
               // Alamat
               // Alamat — hanya untuk catering & laundry
-if (_type != 'kos') ...[
+if (_type != 'kos' && _type != 'paket') ...[
   AuthTextField(
     controller: _alamatController,
     label: 'Alamat Pengiriman',
@@ -239,7 +239,7 @@ if (_type != 'kos') ...[
     prefixIcon: Icons.home_outlined,
     textCapitalization: TextCapitalization.words,
     validator: (v) {
-      if (_type == 'kos') return null; // skip validasi untuk kos
+      if (_type == 'kos' || _type == 'paket') return null; // skip validasi untuk kos dan paket
       if (v == null || v.isEmpty) return 'Alamat wajib diisi';
       if (v.length < 10) return 'Alamat terlalu singkat';
       return null;
@@ -249,7 +249,7 @@ if (_type != 'kos') ...[
 ],
 
 // Untuk kos, tampilkan info saja
-if (_type == 'kos') ...[
+if (_type == 'kos' || _type == 'paket') ...[
   Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
